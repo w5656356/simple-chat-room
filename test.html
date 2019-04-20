@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <style>
+        p {
+            color: orange;
+            padding: 5px 10px;
+            margin: 0;
+        }
+
+        .user_msg {
+            color: #ccc;
+        }
+
+        #messages {
+            background: #000;
+        }
+
+        .chat-box {
+            height: 200px;
+            overflow-y: auto;
+        }
+
+        .margin-top-15 {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div>
+        <ul id="messages"
+            class="list-unstyled chat-box">
+        </ul>
+    </div>
+  <!--  <form action="" class="text-right">-->
+        <div class="post-message">
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-lg-offset-6 col-md-offset-6">
+                    <label for="message-post-area">
+                        说点什么吧
+                    </label>
+                    <textarea
+                            placeholder="请开始你的表演"
+                            id="message-post-area"
+                            class="form-control"
+                            rows="5"></textarea>
+                    <button class="btn btn-primary margin-top-15"
+                            onclick="postMessage()">
+                        发送信息
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="change-name margin-top-15">
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-lg-offset-6 col-md-offset-6">
+                    <label for="input-change-name">
+                        更改名字请在下方输入
+                    </label>
+                    <input
+                            placeholder="取个什么狗名好呢"
+                            id="input-change-name"
+                            class="form-control"
+                            onkeypress="enterChangeName()"
+                            type="text">
+                    <button class="btn btn-info btn-sm margin-top-15"
+                            onclick="changeName()">
+                        修改昵称
+                    </button>
+                </div>
+            </div>
+        </div>
+    <!--</form>-->
+</div>
+<script>
+    let ws = new WebSocket('ws://localhost:3000')
+    let nickname = ''
+    /*通信通道监测*/
+    ws.onopen = function () {
+        /*alert('已经成功连接上服务器！')    */
+    }
+    ws.onmessage = function (mes) {
+        loadChat(mes)
+    }
+    ws.onclose = function () {
+        alert('连接已断开!')
+    }
+    /*服务器信息本地化处理*/
+    function loadChat(e) {
+        console.log('妈的你接收了个啥',e,typeof e)
+        let mes = JSON.parse(e.data)
+        let type = mes.type
+        let dom = document.createElement('li')
+        let inner
+        /*有人来了*/
+        if(type === 'notice'){
+            inner = `<li><p><i class="glyphicon glyphicon-user"></i>&nbsp;&nbsp;欢迎${mes.nickname}加入聊天室！</p></li>`
+        }else if(type === 'notice2'){
+            inner = `<li><p><i class="glyphicon glyphicon-plus"></i>&nbsp;&nbsp;有狗${mes.nickname}来了！</p></li>`
+        }else if(type === 'text'){
+            inner = `<li><p class="user_msg"><span class="label label-info">${mes.nickname}</span>&nbsp;&nbsp;${mes.message}</p></li>`
+        }else if(type === 'leave'){
+            inner = `<li><p><i class="glyphicon glyphicon-minus"></i>&nbsp;&nbsp;有狗${mes.nickname}离开了！</p></li>`
+        }else if(type === 'changename'){
+            inner = `<li><p><i class="glyphicon glyphicon-tags"></i>&nbsp;&nbsp;${mes.message}</p></li>`
+        }else{
+            inner = `<li><p><i class="glyphicon glyphicon-exclamation-sign"></i>&nbsp;&nbsp;未能识别的服务器状态</p></li>`
+        }
+        dom.innerHTML = inner
+        let append = document.querySelector('#messages')
+        append.appendChild(dom)
+    }
+    /*本地信息上传服务器*/
+    function postMessage() {
+        let val = document.querySelector('#message-post-area').value
+        ws.send(val)
+        document.querySelector('#message-post-area').value = ''
+        document.querySelector('#message-post-area').focus()
+    }
+    /*用户修改名称并上传服务器*/
+    function changeName() {
+        console.log('llll',event)
+        let val = '/nick' + document.querySelector('#input-change-name').value
+        ws.send(val)
+        document.querySelector('#input-change-name').value = ''
+        document.querySelector('#input-change-name').focus()
+    }
+    /*回车修改名字*/
+    function enterChangeName() {
+        console.log('dddd',event)
+        if(event.keyCode === 13){
+            let val = '/nick' + document.querySelector('#input-change-name').value
+            ws.send(val)
+            document.querySelector('#input-change-name').value = ''
+            document.querySelector('#input-change-name').focus()
+        }
+    }
+</script>
+</body>
+</html>

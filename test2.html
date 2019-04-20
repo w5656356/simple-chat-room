@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<script>
+    /*-------------------如果是上周就传7，昨天就传1，明天就传-1，下周就传-7，依次类推，when是代表的天数。-----------------------*/
+    function getTime(when){
+        let timeNow = new Date()
+        let timeNeed = new Date(timeNow - when*24*3600*1000)
+        Date.prototype.changeTimeFormat = function () {
+            return this.getFullYear() + "年" + (this.getMonth() + 1) + "月" + this.getDate() + "日 " + this.getHours() + "点" + this.getMinutes() + "分" + this.getSeconds() + "秒";
+        }
+        timeNeed = timeNeed.changeTimeFormat()
+        console.log(timeNeed)
+    }
+    getTime(-7)
+</script>
+</body>
+</html>
